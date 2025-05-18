@@ -7,13 +7,32 @@ from utils.exercise import get_personalized_exercise
 from utils.screening import calculate_bmi, interpret_blood_sugar, lifestyle_risk, recommend_water_intake
 from utils.bot import ask_cohere_bot, ask_faq_bot
 from utils.prediction import predict_diabetes_ml
+import cohere
 
-import base64
+co = cohere.Client("PVibIuSTwdGlHJWOV3cLFy0iCV9lzqHx9B4lp8eG")  # Replace with your actual Cohere key
+
+def get_health_tips(age, bmi, risk):
+    prompt = f"""
+You are a health advisor. Provide exactly 3 short and practical daily lifestyle tips for a person who is {age} years old with a BMI of {bmi} and a diabetes risk level of {risk}.
+
+Format:
+1. ....
+2. ...
+3. ...
+"""
+    response = co.chat(
+        model='command-r',
+        message=prompt,
+        temperature=0.7
+    )
+    return response.text.strip()
 
 def get_base64_image(path):
     with open(path, "rb") as f:
         data = f.read()
     return base64.b64encode(data).decode()
+
+co = cohere.Client("PVibIuSTwdGlHJWOV3cLFy0iCV9lzqHx9B4lp8eG")  # Replace with your actual Cohere key
 
 # Load dataset
 df = pd.read_csv("Final_Diabetes_Prediction_Dataset_with_Videos.csv")
@@ -99,11 +118,12 @@ st.markdown(f"""
             <a href="/?page=Diagnostic%20Tests" target="_self">Diagnostic Tests</a>
             <a href="/?page=Ask%20the%20Bot" target="_self">Ask the Bot</a>
             <a href="/?page=Patient%20Report" target="_self">Patient Report</a>
+            <a href="/?page=Emergency%20Guide" target="_self">Emergency Guide</a>
         </div>
     </div>
 """, unsafe_allow_html=True)
 
-# 1️⃣ Read the `page` query param, default to "Landing"
+# 1️⃣ Read the page query param, default to "Landing"
 params = st.query_params
 page = params.get("page", "Landing")
 
@@ -178,7 +198,7 @@ def add_bg_to_main_content(image_file):
         unsafe_allow_html=True
     )
 
-# 3️⃣ From here on, `page` is Home, Prediction, etc.
+# 3️⃣ From here on, page is Home, Prediction, etc.
 
 # ----------------------- Pages -----------------------
 if page == "Home":
@@ -206,15 +226,15 @@ if page == "Home":
         st.image("static/type1.jpg", caption="Symptoms of Type 1 Diabetes")
     with col2:
         st.markdown("""
-        **Type 1 diabetes** is a chronic condition in which the pancreas produces **little or no insulin**.  
+        *Type 1 diabetes* is a chronic condition in which the pancreas produces *little or no insulin*.  
         It's often diagnosed in children and young adults.
 
         Common symptoms include:  
         - Increased thirst and frequent urination 💧  
-        - Extreme hunger 🍽️  
-        - Unintended weight loss ⚖️  
+        - Extreme hunger 🍽  
+        - Unintended weight loss ⚖  
         - Fatigue 😴  
-        - Blurred vision 👁️  
+        - Blurred vision 👁  
         - Mood changes 😠
 
         Insulin is an important hormone that regulates the amount of glucose (sugar) in your blood. Under normal circumstances, insulin functions in the following steps:
@@ -225,7 +245,7 @@ if page == "Home":
         When glucose enters your cells and the levels in your bloodstream decrease, it signals your pancreas to stop producing insulin.
         If you don’t have enough insulin, too much sugar builds up in your blood, causing hyperglycemia (high blood sugar), and your body can’t use the food you eat for energy. This can lead to serious health problems or even death if it’s not treated. People with Type 1 diabetes need synthetic insulin every day in order to live and be healthy.
 
-        Type 1 diabetes was previously known as juvenile diabetes and insulin-dependent diabetes.
+        Type 1 diabetes was previously known as juvenile diabetes and insulin-dependent diabetes.
         """)
     st.markdown("---")
 
@@ -237,7 +257,7 @@ if page == "Home":
         Type 2 diabetes (T2D) is a chronic condition that happens when you have persistently high blood sugar levels (hyperglycemia).
     
         Symptoms:  
-        - Significant weight loss ⚖️
+        - Significant weight loss ⚖
         - Increased water intake 💧
         - Increased frequency of urination 🚽
         - Tiredness 😴  
@@ -247,7 +267,7 @@ if page == "Home":
         T2D happens because your pancreas doesn’t make enough insulin (a hormone), your body doesn’t use insulin properly, or both. This is different from Type 1 diabetes, which happens when an autoimmune attack on your pancreas results in a total lack of insulin production.  
         Type 2 diabetes is very common. More than 37 million people in the U.S. have diabetes (about 1 in 10 people), and about 90% to 95% of them have T2D.
 
-        Researchers estimate that T2D affects about 6.3% of the world’s population. T2D most commonly affects adults over 45, but people younger than 45 can have it as well, including children.
+        Researchers estimate that T2D affects about 6.3% of the world’s population. T2D most commonly affects adults over 45, but people younger than 45 can have it as well, including children.
         """)
     with col4:
         st.image("static/type2.jpg", caption="Type 2 Diabetes Awareness")
@@ -263,17 +283,17 @@ if page == "Home":
         Gestational diabetes (GD or GDM) is a type of diabetes that develops exclusively in pregnancy when blood sugar levels get too high (hyperglycemia). It happens when the hormones from the placenta block your ability to use or make insulin. Insulin helps your body maintain the right amount of glucose in your blood. Too much glucose in your blood can lead to pregnancy complications. GD usually appears during the middle of pregnancy, between 24 and 28 weeks. Your pregnancy care provider will order a blood test to check for gestational diabetes.
 
         Common risk factors include:  
-        - Obesity or excessive weight before pregnancy ⚖️  
+        - Obesity or excessive weight before pregnancy ⚖  
         - Age over 35 👩‍🦳  
         - Personal or family history of diabetes 🧬  
         - Polycystic ovary syndrome (PCOS) 🧪
 
        Developing GD doesn’t mean you already had diabetes before you got pregnant. The condition appears because of pregnancy. People with Type 1 and Type 2 diabetes before pregnancy have their own, separate challenges when they become pregnant.
 
-        Fortunately, gestational diabetes is well understood, and healthcare providers are usually able to help you manage the condition with small lifestyle and dietary changes. Most people don’t experience serious complications from gestational diabetes and deliver healthy babies.
+        Fortunately, gestational diabetes is well understood, and healthcare providers are usually able to help you manage the condition with small lifestyle and dietary changes. Most people don’t experience serious complications from gestational diabetes and deliver healthy babies.
         
         Prevention of Gestational Diabetes:
-        While gestational diabetes cannot always be prevented, adopting a healthy lifestyle before and during pregnancy can significantly reduce the risk. Maintaining a balanced diet rich in whole grains, fruits, vegetables, and lean proteins helps regulate blood sugar levels. Regular physical activity, such as walking or prenatal exercises, improves insulin sensitivity. Achieving and maintaining a healthy weight before pregnancy and managing weight gain during pregnancy are also key. If you have risk factors, early screening and regular prenatal checkups can help detect and manage blood sugar changes promptly.
+        While gestational diabetes cannot always be prevented, adopting a healthy lifestyle before and during pregnancy can significantly reduce the risk. Maintaining a balanced diet rich in whole grains, fruits, vegetables, and lean proteins helps regulate blood sugar levels. Regular physical activity, such as walking or prenatal exercises, improves insulin sensitivity. Achieving and maintaining a healthy weight before pregnancy and managing weight gain during pregnancy are also key. If you have risk factors, early screening and regular prenatal checkups can help detect and manage blood sugar changes promptly.
        
        Why Gestational Diabetes Often Has No Warning Signs
 
@@ -286,21 +306,21 @@ if page == "Home":
     st.markdown("---")
 
     # Prediabetes
-    st.markdown("## ⚠️ Prediabetes")
+    st.markdown("## ⚠ Prediabetes")
     col7, col8 = st.columns([2, 1])
     with col7:
         st.markdown("""
         Prediabetes happens when you have elevated blood sugar levels, but they’re not high enough to be considered Type 2 diabetes.
 
-        - ✅ **Healthy range:** 70–99 mg/dL  
-        - ⚠️ **Prediabetic range:** 100–125 mg/dL
+        - ✅ *Healthy range:* 70–99 mg/dL (FBS)
+        - ⚠ *Prediabetic range:* 100–125 mg/dL (FBS)
 
-        According to the **American Diabetes Association**, for a 45-year-old with prediabetes, the **10-year risk** of developing Type 2 diabetes is **9% to 14%**.
+        According to the *American Diabetes Association, for a 45-year-old with prediabetes, the **10-year risk* of developing Type 2 diabetes is *9% to 14%*.
 
-        Luckily, prediabetes is **reversible** with:
+        Luckily, prediabetes is *reversible* with:
         - Healthy eating 🥗  
         - Regular exercise 🏃  
-        - Weight loss ⚖️  
+        - Weight loss ⚖  
         - Glucose monitoring 💉
         """)
     with col8:
@@ -349,7 +369,7 @@ if page == "Home":
 
     🩺 Better health tracking: Screening enables ongoing monitoring of key indicators like BMI, blood sugar, and hydration, helping users stay in control.
 
-    🧠 Empowerment through awareness: Knowing your risk motivates healthier decisions and gives people the tools to protect their future.
+    🧠 Empowerment through awareness: Knowing your risk motivates healthier decisions and gives people the tools to protect their future.
         """)
     with col4:
         st.image("static/matters.jpg")
@@ -401,7 +421,7 @@ elif page == "Screening Tools":
     height = st.number_input("Height (m)", 1.0, 2.5)
     if st.button("Calculate BMI"):
         bmi, status = calculate_bmi(weight, height)
-        st.success(f"Your BMI is **{bmi}** — {status}")
+        st.success(f"Your BMI is *{bmi}* — {status}")
 
     # Random Blood Sugar Interpretation
     st.subheader("2. 🩸 Random Blood Sugar Interpretation")
@@ -416,7 +436,7 @@ elif page == "Screening Tools":
     water = st.number_input("Water Intake (L)", 0.0, 10.0, step=0.1)
     if age and water:
         recommended = recommend_water_intake(weight) # type: ignore
-        st.write(f"Recommended Water Intake: **{recommended} L/day**")
+        st.write(f"Recommended Water Intake: *{recommended} L/day*")
         if water < recommended - 0.5:
             st.info("💧 You may need to increase your intake.")
         elif water > recommended + 0.5:
@@ -425,7 +445,7 @@ elif page == "Screening Tools":
             st.success("✅ Your water intake looks good!")
 
     # Lifestyle Risk
-    st.subheader("4. ⚠️ Lifestyle Risk Evaluation")
+    st.subheader("4. ⚠ Lifestyle Risk Evaluation")
     smoke = st.selectbox("Do you smoke?", ["Yes", "No"])
     alcohol = st.selectbox("Do you drink alcohol?", ["Yes", "No"])
     inactive = st.selectbox("Exercise < 4x/week?", ["Yes", "No"])
@@ -447,13 +467,11 @@ elif page == "Prediction":
             background-attachment: fixed;
             background-size: cover;
         }}
-
         h1, h2, h3, h4, h5, h6, p, label, .css-10trblm, .css-1d391kg, .css-1cpxqw2 {{
             color: black !important;
             font-size: 24px !important;
             font-weight: 600;
         }}
-
         .stTextInput>div>div>input,
         .stNumberInput>div>div>input,
         .stTextArea>div>textarea {{
@@ -461,7 +479,6 @@ elif page == "Prediction":
             color: black !important;
             font-size: 18px !important;
         }}
-
         .stButton>button {{
             font-size: 18px !important;
             font-weight: bold;
@@ -471,7 +488,7 @@ elif page == "Prediction":
         """,
         unsafe_allow_html=True
     )
-    # Styled label generator
+
     def styled_label(text):
         return f"""
         <div style='
@@ -483,6 +500,7 @@ elif page == "Prediction":
         """
 
     st.markdown("<h4 style='font-size:28px; font-weight:700;'>🧾 Personal & Lifestyle Information</h4>", unsafe_allow_html=True)
+
     st.markdown(styled_label("📏 BMI"), unsafe_allow_html=True)
     bmi = st.number_input("", min_value=10.0, max_value=60.0, key="bmi")
 
@@ -492,7 +510,7 @@ elif page == "Prediction":
     st.markdown(styled_label("🩺 Blood Pressure Level"), unsafe_allow_html=True)
     bp = st.selectbox("", ["Low", "High"], key="bp")
 
-    st.markdown(styled_label("⚖️ Recent Weight Change?"), unsafe_allow_html=True)
+    st.markdown(styled_label("⚖ Recent Weight Change?"), unsafe_allow_html=True)
     weight_change = st.selectbox("", ["No", "Weight Gain", "Weight Loss"], key="weight_change")
 
     st.markdown(styled_label("🍷 Alcoholic Habits"), unsafe_allow_html=True)
@@ -517,8 +535,15 @@ elif page == "Prediction":
     st.markdown(styled_label("💊 Any Diseases or Medications?"), unsafe_allow_html=True)
     diseases = st.selectbox("", ["Yes", "No"], key="diseases")
 
-    st.markdown("")
+    # Initialize report session keys if not already present
+    if "report" not in st.session_state:
+        st.session_state.report = {}
+    if "risk" not in st.session_state:
+        st.session_state["risk"] = None
+    if "tips" not in st.session_state:
+        st.session_state["tips"] = None
 
+    # Step 1: Predict button
     if st.button("🧠 Predict Diabetes Risk"):
         data = {
             "BMI": bmi,
@@ -534,9 +559,9 @@ elif page == "Prediction":
         }
         prediction = predict_diabetes_ml(data)
         risk = "High" if prediction == 1 else "Low"
-        advice = "⚠️ High risk: Please consult a doctor and follow a healthy routine." if risk == "High" else "✅ Low risk: Maintain your healthy lifestyle."
+        advice = "⚠ High risk: Please consult a doctor and follow a healthy routine." if risk == "High" else "✅ Low risk: Maintain your healthy lifestyle."
 
-        # Update session state report
+        # Save prediction data to report
         st.session_state.report.update({
             "Age": age,
             "BMI": bmi,
@@ -544,18 +569,41 @@ elif page == "Prediction":
             "Diabetes Risk": risk,
             "Prediction Advice": advice
         })
+        st.session_state["risk"] = risk
+
         st.success(f"🧠 Your Diabetes Risk is: {risk}")
         st.info(advice)
-        
+
+    # Step 2: Get AI tips (only if prediction done)
+    if st.session_state.get("risk"):
+        if st.button("📌 Get AI Health Tips"):
+            with st.spinner("Generating personalized tips..."):
+                try:
+                    risk = st.session_state["risk"]
+                    tips = get_health_tips(age, bmi, risk)
+                    st.markdown("### 🧠 AI-Powered Lifestyle Tips")
+                    st.markdown(tips)
+                    st.session_state["tips"] = tips
+                    st.session_state.report["Health Tips"] = tips
+                except Exception as e:
+                    st.error("❌ Failed to generate tips.")
+                    st.exception(e)
+
+    # Step 3: Show Download Button (only if both prediction and tips available)
+    if st.session_state.get("risk") and st.session_state.get("tips"):
+        report = st.session_state.report
         pred_text = f"""DIABETES PREDICTION REPORT
-Age: {age}
-BMI: {bmi}
-Weight Change: {weight_change}
-Risk: {risk}
-Advice: {advice}
+Age: {report.get("Age")}
+BMI: {report.get("BMI")}
+Weight Change: {report.get("Weight Change")}
+Risk: {report.get("Diabetes Risk")}
+Advice: {report.get("Prediction Advice")}
+
+🧠 AI-Powered Lifestyle Tips:
+{report.get("Health Tips")}
 """
         st.download_button("📄 Download Prediction Report", pred_text, "prediction_report.txt", "text/plain")
-
+        
 elif page == "Diet & Nutrition":
     diet_img = get_base64_image("static/diet.jpg")
     st.markdown(
@@ -624,7 +672,7 @@ elif page == "Diet & Nutrition":
         st.markdown(f"💪 <b>Protein Requirement:</b><br>{result['Protein']} g/day", unsafe_allow_html=True)
 
 
-        st.markdown("🍽 **Food Plan:**", unsafe_allow_html=True)
+        st.markdown("🍽 *Food Plan:*", unsafe_allow_html=True)
         st.markdown(
     f"<p style='color:black; font-size:18px;'>{result['FoodPlan']}</p>",
     unsafe_allow_html=True
@@ -681,7 +729,7 @@ elif page == "Physical Activity":
 
     risk = st.selectbox("🩺 Risk Level", ["🔴 High", "🟢 Low"])
     age = st.number_input("🎂 Age", 1, 120)
-    weight = st.number_input("⚖️ Weight (kg)", 30.0, 200.0)
+    weight = st.number_input("⚖ Weight (kg)", 30.0, 200.0)
     gender = st.selectbox("🧑 Gender", ["👨 Male", "👩 Female"])
 
     result = get_personalized_exercise(risk, age, gender, weight)
@@ -698,7 +746,7 @@ elif page == "Physical Activity":
     else:
         video_link = "https://www.youtube.com/watch?v=1DYH5ud3zHo"
 
-    st.subheader("🏋️ Activity Level")
+    st.subheader("🏋 Activity Level")
     st.write(result.get("ActivityLevel", "-"))
 
     st.subheader("🌞 Morning")
@@ -800,10 +848,10 @@ elif page == "Diagnostic Tests":
             else: return "Diabetes"
 
         st.markdown("### 🧾 Test Interpretations")
-        st.write(f"**FBS**: {interpret_fbs(fbs)}")
-        st.write(f"**PPBS**: {interpret_ppbs(ppbs)}")
-        st.write(f"**RBS**: {interpret_rbs(rbs)}")
-        st.write(f"**HbA1c**: {interpret_hba1c(hba1c)}")
+        st.write(f"*FBS*: {interpret_fbs(fbs)}")
+        st.write(f"*PPBS*: {interpret_ppbs(ppbs)}")
+        st.write(f"*RBS*: {interpret_rbs(rbs)}")
+        st.write(f"*HbA1c*: {interpret_hba1c(hba1c)}")
 
         results = [
             interpret_fbs(fbs),
@@ -815,12 +863,12 @@ elif page == "Diagnostic Tests":
         if "Diabetes" in results:
             msg = ("Your values suggest poor control. Please follow your treatment and "
                    "consult your doctor.") if risk == "Already Diabetic" else \
-                  "⚠️ Your results indicate **Diabetes**. Consult a healthcare provider immediately."
+                  "⚠ Your results indicate *Diabetes*. Consult a healthcare provider immediately."
             st.error(msg)
         elif "Pre-Diabetes" in results:
-            st.warning("You're in the **Pre-Diabetic** range. Improve your lifestyle and retest in 3 months.")
+            st.warning("You're in the *Pre-Diabetic* range. Improve your lifestyle and retest in 3 months.")
         else:
-            st.success("✅ All test values are within **normal range**. Keep up your good habits!")
+            st.success("✅ All test values are within *normal range*. Keep up your good habits!")
 
 
 elif page == "Ask the Bot":
@@ -937,5 +985,80 @@ elif page == "Patient Report":
 
         st.download_button("📥 Download Full Combined Report", full_report, "full_patient_report.txt", "text/plain")
     else:
-        st.warning("⚠️ Please upload all three reports to generate the final combined report.")
+        st.warning("⚠ Please upload all three reports to generate the final combined report.")
 
+elif page == "Emergency Guide":
+    emergency_img = get_base64_image("static/emergency.jpg")  # Optional background
+    st.markdown(
+        f"""
+        <style>
+        .stApp {{
+            background-image: url("data:image/jpeg;base64,{emergency_img}");
+            background-attachment: fixed;
+            background-size: cover;
+        }}
+        h2, h3, p, li {{
+            color: black !important;
+            font-size: 20px;
+        }}
+        </style>
+        """, unsafe_allow_html=True
+    )
+
+    st.markdown("<h2 style='font-size:36px;'>🆘 Emergency Guide for Diabetics</h2>", unsafe_allow_html=True)
+    st.markdown("This quick-reference guide provides life-saving steps for diabetic emergencies.", unsafe_allow_html=True)
+
+    st.markdown("### ⛔ Hypoglycemia (Low Blood Sugar)")
+    st.markdown("""
+- *Symptoms:* Shaking, sweating, dizziness, confusion, loss of consiousness.
+- *Immediate Actions:*
+    - Give 15g of fast-acting carbs: 1/2 glass juice, glucose tablets, sugar candy.
+    - Recheck sugar after 15 mins.
+    - If still low,Call emergency services.
+    """)
+
+    st.markdown("### 🔺 Hyperglycemia (High Blood Sugar)")
+    st.markdown("""
+- *Symptoms:* Frequent urination, thirst, fatigue, fruity breath, nausea.
+- *Immediate Actions:*
+    - Drink water to stay hydrated.
+    - Avoid sugary or high-carb food.
+    - If the above symptoms persist call emergency services immediately.
+    """)
+
+    st.markdown("### ☎ When to Seek Emergency Help")
+    st.markdown("""
+- Unconsciousness
+- Seizure
+- Severe vomiting or dehydration
+- Confusion or disorientation
+""")
+
+    # Text for download
+    emergency_text = """EMERGENCY GUIDE FOR DIABETICS
+
+⛔ Hypoglycemia (Low Blood Sugar)
+Symptoms: Shaking, sweating, dizziness, confusion.
+Actions:
+- Take 15g of sugar (juice, candy).
+- Recheck in 15 mins.
+- Repeat if needed.
+- If unconscious: call emergency, do NOT feed.
+
+🔺 Hyperglycemia (High Blood Sugar)
+Symptoms: Thirst, frequent urination, fruity breath.
+Actions:
+- Drink water.
+- Avoid carbs.
+- Call doctor if sugar >300 mg/dL.
+
+☎ Emergency Signs:
+- Unconscious
+- Seizure
+- Confusion
+- Vomiting
+
+Keep this guide handy. Share with caregivers.
+"""
+
+    st.download_button("📄 Download Emergency Guide", emergency_text, "emergency_guide.txt", "text/plain")
